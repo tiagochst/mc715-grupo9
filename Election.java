@@ -123,7 +123,7 @@ public class Election implements Watcher {
                         System.out.println("Temporary value: " + root + "/element" + min);
                         byte[] b = zk.getData(root + "/element" + min,
                                     false, stat);
-                        zk.delete(root + "/element" + min, 0);
+		        zk.delete(root + "/element" + min, 0);
                         ByteBuffer buffer = ByteBuffer.wrap(b);
                         retvalue = buffer.getInt();
 
@@ -135,8 +135,42 @@ public class Election implements Watcher {
 
         int tamanho() throws KeeperException, InterruptedException{
 	    List<String> list = zk.getChildren(root, true);
-	    return list.size;
+	    return list.size();
 	}
+
+        /**
+         * Pega o menor elemento da fila.
+         *
+         * @return
+         * @throws KeeperException
+         * @throws InterruptedException
+         */
+        int menor() throws KeeperException, InterruptedException{
+            int retvalue = -1;
+            Stat stat = null;
+
+            // Get the first element available
+            while (true) {
+                synchronized (mutex) {
+                    List<String> list = zk.getChildren(root, true);
+                    if (list.size() == 0) {
+                        System.out.println("Going to wait");
+                        mutex.wait();
+                    } else {
+                        Integer min = new Integer(list.get(0).substring(7));
+                        for(String s : list){
+                            Integer tempValue = new Integer(s.substring(7));
+                            //System.out.println("Temporary value: " + tempValue);
+                            if(tempValue < min) min = tempValue;
+                        }
+                        System.out.println("Temporary value: " + root + "/element" + min);
+                        return retvalue;
+                    }
+                }
+            }
+        }
+
+
     }
 
     public static void main(String args[]) {
@@ -148,10 +182,10 @@ public class Election implements Watcher {
     public static void election(String args[]){
         Queue q = new Queue(args[0], "/ELECTION");
     
-
 	try{
 	    q.produce(0);
-        System.out.println("Input: " + args[0]);
+	    q.produce(0);
+	    System.out.println("Input: " + args[0]);
 	} catch (KeeperException e){
 
 	} catch (InterruptedException e){
@@ -160,13 +194,16 @@ public class Election implements Watcher {
 
 	try{
 	List<String> list = q.zk.getChildren("/ELECTION", true);
+	while (q.tamanho() != 0) {
+	    System.out.println("Menor filho:" + q.menor());
+	} 
 	} catch (KeeperException e){
 
 	} catch (InterruptedException e){
 
 	}
 
-	while (q.tamanho() != 0) {}
+
 
         
     }
