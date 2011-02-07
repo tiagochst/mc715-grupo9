@@ -176,24 +176,22 @@ public class Election implements Watcher {
 	Queue q = new Queue(args[0], "/ELECTION");
     
 	try{
-	    System.out.println("Id do filho: " + q.produce(0).substring(13));
-	    //   System.out.println("Id do filho" + q.produce(0));
+	    int selfId = Integer.parseInt(q.produce(0).substring(13));
+	    System.out.println("Id do filho" + selfId);
 	    // System.out.println("Id do filho" + q.produce(0));
 	    //System.out.println("Id do filho" + q.produce(0));
 	    //System.out.println("Input: " + args[0]);
-	} catch (KeeperException e){
 
-	} catch (InterruptedException e){
-
-	}
-
-	try{
 	    List<String> list = q.zk.getChildren("/ELECTION", true);
 	    int aux = -1;
 	    while (q.tamanho() != 0) {
 		if(q.menor() != aux){
 		    System.out.println("Menor filho:" + q.menor());
 		    aux = q.menor();
+		    if(selfId == q.menor()) 
+			System.out.println("Eu sou o lider\n");
+		    else
+			System.out.println("O lider nao sou eu\n");
 		}
 	    } 
 	} catch (KeeperException e){
