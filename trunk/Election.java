@@ -78,10 +78,10 @@ public class Election implements Watcher {
          * Add element to the queue.
          *
          * @param i
-         * @return
+         * @return Znode
          */
 
-       String produce(int i) throws KeeperException, InterruptedException{
+	String produce(int i) throws KeeperException, InterruptedException{
             ByteBuffer b = ByteBuffer.allocate(4);
             byte[] value;
 
@@ -89,9 +89,7 @@ public class Election implements Watcher {
             b.putInt(i);
             value = b.array();
             return zk.create(root + "/n_", value, Ids.OPEN_ACL_UNSAFE,
-		      CreateMode.EPHEMERAL_SEQUENTIAL);
-
-	    //return true;
+			     CreateMode.EPHEMERAL_SEQUENTIAL);
         }
 
 
@@ -139,9 +137,9 @@ public class Election implements Watcher {
 	}
 
         /**
-         * Pega o menor elemento da fila.
+         * Acha o menor elemento da fila.
          *
-         * @return
+         * @return menor ID
          * @throws KeeperException
          * @throws InterruptedException
          */
@@ -156,19 +154,16 @@ public class Election implements Watcher {
 		    Integer min = new Integer(list.get(0).substring(7));
 		    for(String s : list){
 			Integer tempValue = new Integer(s.substring(7));
-			//System.out.println("Temporary value: " + tempValue);
 			if(tempValue < min) min = tempValue;
 		    }
 		    return min;
 		}
-		    return -1;
+		return -1;
 	    }
 	}
     }
 
     public static void main(String args[]) {
-	//        if (args[0].equals("qTest"))
-	//            queueTest(args);
 	election(args);          
     }
     
@@ -178,9 +173,6 @@ public class Election implements Watcher {
 	try{
 	    int selfId = Integer.parseInt(q.produce(0).substring(13));
 	    System.out.println("Id do filho" + selfId);
-	    // System.out.println("Id do filho" + q.produce(0));
-	    //System.out.println("Id do filho" + q.produce(0));
-	    //System.out.println("Input: " + args[0]);
 
 	    List<String> list = q.zk.getChildren("/ELECTION", true);
 	    int aux = -1;
@@ -199,11 +191,6 @@ public class Election implements Watcher {
 	} catch (InterruptedException e){
 
 	}
-
-
-
-        
     }
-  
 }
 
