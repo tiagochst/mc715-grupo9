@@ -132,8 +132,9 @@ public class Election implements Watcher {
         }
 
         int tamanho() throws KeeperException, InterruptedException{
-	    List<String> list = zk.getChildren(root, true);
-	    return list.size();
+	    //List<String> list = zk.getChildren(root, true);
+	    //return list.size();
+	    return zk.getNumChildren();
 	}
 
         /**
