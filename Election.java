@@ -58,7 +58,7 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
         try {
             synchronized (this) {
                 while (!dm.dead) {
-                    wait();
+		    wait();
                 }
             }
         } catch (InterruptedException e) {
@@ -83,7 +83,7 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
             start();
         }
 
-        public void run() {
+	/*	   public void run() {
             byte b[] = new byte[80];
             int rc;
             try {
@@ -93,7 +93,7 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
             } catch (IOException e) {
             }
 
-        }
+	   }*/
     }
 
     public void exists(byte[] data) {
@@ -117,21 +117,21 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
                     e.printStackTrace();
                 }
             }
-	    /*     try {
+	    /* try {
                 FileOutputStream fos = new FileOutputStream(filename);
                 fos.write(data);
                 fos.close();
             } catch (IOException e) {
                 e.printStackTrace();
 		}*/
-	    //    try {
+	    //try {
                 System.out.println("Starting child");
-                //child = Runtime.getRuntime().exec(exec);
-                //new StreamWriter(child.getInputStream(), System.out);
-                //new StreamWriter(child.getErrorStream(), System.err);
-		//         } catch (IOException e) {
-		//            e.printStackTrace();
-		//       }
+		/*  child = Runtime.getRuntime().exec(exec);
+                new StreamWriter(child.getInputStream(), System.out);
+                new StreamWriter(child.getErrorStream(), System.err);
+		         } catch (IOException e) {
+		            e.printStackTrace();
+			    }*/
         }
     }
 
@@ -280,7 +280,6 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
     
     public static void election(String args[]){
 	Queue q = new Queue(args[0], "/ELECTION");
-    
 	try{
 	    int selfId = Integer.parseInt(q.produce(0).substring(13));
 	    q.produce(0);
@@ -298,7 +297,8 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
 		    else{
 			System.out.println("O lider nao sou eu");
 			System.out.println("Entao eu vou monitorar o lider...\n");
-			//	q.monitora(q.menor());
+			q.monitora(q.menor());
+			q.run();
 		    }
 		}
 	    } 
