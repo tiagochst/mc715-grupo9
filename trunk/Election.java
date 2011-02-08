@@ -13,10 +13,13 @@ import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.data.Stat;
 
-public class Election implements Watcher {
+public class Election implements Watcher, Runnable, DataMonitor.DataMonitorListener{
 
     static ZooKeeper zk = null;
     static Integer mutex;
+    DataMonitor dm;
+
+    Process child; //@@@@@@@@@@@@@@@@@@@@@
 
     String root;
 
@@ -26,7 +29,7 @@ public class Election implements Watcher {
                 System.out.println("Starting ZK:");
                 zk = new ZooKeeper(address, 3000, this);
                 mutex = new Integer(-1);
-                System.out.println("Finished starting ZK: " + zk);
+		System.out.println("Finished starting ZK: " + zk);
             } catch (IOException e) {
                 System.out.println(e.toString());
                 zk = null;
@@ -150,6 +153,7 @@ public class Election implements Watcher {
         int menor() throws KeeperException, InterruptedException{
             int retvalue = -1;
             Stat stat = null;
+	    //String aux = new String();
 
             // Get the first element available
             while (true) {
@@ -158,8 +162,12 @@ public class Election implements Watcher {
 		    Integer min = new Integer(list.get(0).substring(7));
 		    for(String s : list){
 			Integer tempValue = new Integer(s.substring(7));
-			if(tempValue < min) min = tempValue;
+			if(tempValue < min){
+			    min = tempValue;
+			    String aux = new String(s.substring(7));
+			    System.out.println("Variavel aux: " + aux);
 		    }
+		    dm = new DataMonitor(zk, "/ELECTION/n_" + aux, null, this);
 		    return min;
 		}
 		return -1;
