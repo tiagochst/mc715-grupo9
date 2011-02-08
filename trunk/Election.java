@@ -5,6 +5,11 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Random;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
@@ -13,13 +18,16 @@ import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.data.Stat;
 
-public class Election implements Watcher, Runnable, DataMonitor.DataMonitorListener{
+public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListener{
 
     static ZooKeeper zk = null;
     static Integer mutex;
     DataMonitor dm;
 
     Process child; //@@@@@@@@@@@@@@@@@@@@@
+    String filename;
+    String exec[];
+
 
     String root;
 
@@ -44,6 +52,90 @@ public class Election implements Watcher, Runnable, DataMonitor.DataMonitorListe
             mutex.notify();
         }
     }
+
+
+    public void run() {
+        try {
+            synchronized (this) {
+                while (!dm.dead) {
+                    wait();
+                }
+            }
+        } catch (InterruptedException e) {
+        }
+    }
+
+    public void closing(int rc) {
+        synchronized (this) {
+            notifyAll();
+        }
+    }
+
+
+    static class StreamWriter extends Thread {
+        OutputStream os;
+
+        InputStream is;
+
+        StreamWriter(InputStream is, OutputStream os) {
+            this.is = is;
+            this.os = os;
+            start();
+        }
+
+        public void run() {
+            byte b[] = new byte[80];
+            int rc;
+            try {
+                while ((rc = is.read(b)) > 0) {
+                    os.write(b, 0, rc);
+                }
+            } catch (IOException e) {
+            }
+
+        }
+    }
+
+    public void exists(byte[] data) {
+        if (data == null) {
+            if (child != null) {
+                System.out.println("Killing process");
+                child.destroy();
+                try {
+                    child.waitFor();
+                } catch (InterruptedException e) {
+                }
+            }
+            child = null;
+        } else {
+            if (child != null) {
+                System.out.println("Stopping child");
+                child.destroy();
+                try {
+                    child.waitFor();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+	    /*     try {
+                FileOutputStream fos = new FileOutputStream(filename);
+                fos.write(data);
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+		}*/
+	    //    try {
+                System.out.println("Starting child");
+                //child = Runtime.getRuntime().exec(exec);
+                //new StreamWriter(child.getInputStream(), System.out);
+                //new StreamWriter(child.getErrorStream(), System.err);
+		//         } catch (IOException e) {
+		//            e.printStackTrace();
+		//       }
+        }
+    }
+
+
 
     /**
      * Producer-Consumer queue
@@ -150,34 +242,40 @@ public class Election implements Watcher, Runnable, DataMonitor.DataMonitorListe
          * @throws KeeperException
          * @throws InterruptedException
          */
-        int menor() throws KeeperException, InterruptedException{
+        String menor() throws KeeperException, InterruptedException{
             int retvalue = -1;
             Stat stat = null;
-	    //String aux = new String();
+	    String aux = new String();
 
             // Get the first element available
             while (true) {
 		List<String> list = zk.getChildren(root, true);
 		if(list.size() != 0){
 		    Integer min = new Integer(list.get(0).substring(7));
+		    aux = list.get(0).substring(2);
 		    for(String s : list){
 			Integer tempValue = new Integer(s.substring(7));
 			if(tempValue < min){
 			    min = tempValue;
-			    String aux = new String(s.substring(7));
-			    System.out.println("Variavel aux: " + aux);
+			    aux = s.substring(2);
+			   
 			}
 		    }
-		    dm = new DataMonitor(zk, "/ELECTION/n_" + aux, null, this);
-		    return min;
+		    System.out.println("Variavel aux: " + aux);
+		    return aux;
 		}
-		return -1;
+		return "-1";
 	    }
 	}
+	
+	void monitora(String s){
+	    this.dm = new DataMonitor(zk, "/ELECTION/n_" + s, null, this);
+	}
+	
     }
 
     public static void main(String args[]) {
-	election(args);          
+	election(args);           
     }
     
     public static void election(String args[]){
@@ -185,18 +283,23 @@ public class Election implements Watcher, Runnable, DataMonitor.DataMonitorListe
     
 	try{
 	    int selfId = Integer.parseInt(q.produce(0).substring(13));
-	    System.out.println("Id do filho" + selfId);
+	    q.produce(0);
+	    System.out.println("Id do filho " + selfId);
 
 	    List<String> list = q.zk.getChildren("/ELECTION", true);
 	    int aux = -1;
 	    while (q.tamanho() != 0) {
-		if(q.menor() != aux){
-		    System.out.println("Menor filho:" + q.menor());
-		    aux = q.menor();
-		    if(selfId == q.menor()) 
+		Integer menor = new Integer(q.menor());
+		if(menor != aux){
+		    System.out.println("Menor filho:" + menor);
+		    aux = menor;
+		    if(selfId == menor) 
 			System.out.println("Eu sou o lider\n");
-		    else
-			System.out.println("O lider nao sou eu\n");
+		    else{
+			System.out.println("O lider nao sou eu");
+			System.out.println("Entao eu vou monitorar o lider...\n");
+			//	q.monitora(q.menor());
+		    }
 		}
 	    } 
 	} catch (KeeperException e){
