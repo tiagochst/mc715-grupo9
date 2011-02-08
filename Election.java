@@ -166,6 +166,7 @@ public class Election implements Watcher, Runnable, DataMonitor.DataMonitorListe
 			    min = tempValue;
 			    String aux = new String(s.substring(7));
 			    System.out.println("Variavel aux: " + aux);
+			}
 		    }
 		    dm = new DataMonitor(zk, "/ELECTION/n_" + aux, null, this);
 		    return min;
