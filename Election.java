@@ -137,7 +137,7 @@ public class Election implements Watcher {
 	    Stat stat;
 	    
 	    stat = newStat();
-	    zk.getData(name, false, stat);
+	    zk.getData("/ELECTION", false, stat);
 	    
 	    return stat.getNumChildren();
 	}
