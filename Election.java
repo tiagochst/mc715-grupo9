@@ -195,7 +195,7 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
 		    }
 		    return aux;
 		}
-		return "-1";
+		return "99999999999999999999";
 	    }
 	}
 	
