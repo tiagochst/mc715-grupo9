@@ -27,7 +27,7 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
     Process child; //@@@@@@@@@@@@@@@@@@@@@
     String filename = "mc715";
     String exec[];
-
+    String lider;
     String root;
 
     Election(String address) {
@@ -48,15 +48,23 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
     synchronized public void process(WatchedEvent event) {
         synchronized (mutex) {
             System.out.println("Process: " + event.getType());
-            mutex.notify();
-	    //	    notifyAll();
-	    //System.out.println("Notifiquei!!");
+	    boolean isNodeDeleted = event.getType().equals(EventType.NodeDeleted);          // verify if this is the defined znode
+           boolean LiderAtual = event.getPath().equals(lider);
+	   
+	   if (isNodeDeleted &&  LiderAtual) {
+	       System.out.println("O no lider caiu");
+	       //<strong>TODO</strong>: send an email or whatever
+	   }
+	   
+	   mutex.notify();
+	   //	    notifyAll();
+	   //System.out.println("Notifiquei!!");
         }
     }
 
-
-
-
+ public void SetLider(String s) {
+     this.lider = s;
+ }
 
     public void run() {
         try {
@@ -105,52 +113,9 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
     }
 
     public void exists(byte[] data) {
-        if (data == null) {
-	    System.out.println("Data nao null\n");
-            if (child != null) 
-		System.out.println("child nao null");
-	    System.out.println("Killing process");
-	    child.destroy();
-	    try {
-		System.out.println("child wait for");
-		child.waitFor();
-	    } catch (InterruptedException e) {
-	    }
-	
-	    child = null;
-	} else {
-	    System.out.println("data null");
-	    if (child != null) {
-		System.out.println("Stopping child");
-		child.destroy();
-		try {
-		    child.waitFor();
-		} catch (InterruptedException e) {
-		    e.printStackTrace();
-		}
-	    }
-	    /*	     try {
-		     FileOutputStream fos = new FileOutputStream(filename);
-		     fos.write(data);
-		     fos.close();
-		     } catch (IOException e) {
-		     e.printStackTrace();
-		     }*/
-	    //  try {
+
 	    System.out.println("Starting child");
-	    //child = Runtime.getRuntime().exec(exec);
-	    //new StreamWriter(child.getInputStream(), System.out);
-	    //new StreamWriter(child.getErrorStream(), System.err);
-
-	    /*
-	      Acredito que aqui seja a execucao do executavel
-	      No nosso caso ele deve procurar o novo lider
-	    */
-
-	    //  } catch (IOException e) {
-	    //	e.printStackTrace();
-	    //}
-	}
+	
     }
     
 
@@ -323,6 +288,7 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
 		    else{
 			System.out.println("O lider nao sou eu");
 			System.out.println("Entao eu vou monitorar o lider...\n");
+			q.SetLider( "/ELECTION/n_" + q.menor())
 			q.monitora(q.menor());
 			q.run();
 			System.out.println("Fique esperando algo acontecer...\n");
