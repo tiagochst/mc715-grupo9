@@ -119,6 +119,8 @@
   \titlepage % slide 1 - capa
 \end{frame}
 
+\section{Introdução}
+
 \begin{frame}
   \frametitle{Como funciona?}
   \begin{itemize}
@@ -128,13 +130,8 @@
 \item  Para que a queda seja conhecida, é colocado um watcher sobre o znode do líder que é disparado quando ele cai. 
   \end{itemize}
 \end{frame}
-%-%-%-%-%-%-%-%-%-%-%-%
-%  Introdução         %
-%   - O que é o boot  %
-%   - Utilidades      %
-%   - Dificuldades    %
-%-%-%-%-%-%-%-%-%-%-%-%
-\section{Introdução}
+
+\section{Códigos}
 
 
 \begin{frame}[fragile=singleslide]
@@ -158,9 +155,6 @@
     }
     \end{lstlisting}
   \end{exampleblock}
-
-  %try out     dmesg | less 
-
 \end{frame}
 
 
@@ -190,17 +184,9 @@
         } catch (InterruptedException e) {
         }
     }
-
     \end{lstlisting}
   \end{exampleblock}
-
-  %try out     dmesg | less 
-
 \end{frame}
-
-
-
-
 
 \begin{frame}[fragile=singleslide]
   \frametitle{Inserindo znode efêmero na disputa pela liderança}
@@ -220,10 +206,7 @@
 
     \end{lstlisting}
   \end{exampleblock}
-
 \end{frame}
-
-
 
 
 \begin{frame}[fragile=singleslide]
@@ -236,8 +219,6 @@
 	    
 	    return stat.getNumChildren();
 	}
-
-
     \end{lstlisting}
   \end{exampleblock}
 \end{frame}
@@ -275,7 +256,6 @@
 \end{frame}
 
 
-
 \begin{frame}[fragile=singleslide]
   \frametitle{Monitoração do znode}
   \begin{exampleblock}{Election.java}
@@ -284,8 +264,6 @@
 	    this.dm = new DataMonitor(zk, "/ELECTION/n_" + s, null, this);
 	}
     }
-
-
     \end{lstlisting}
   \end{exampleblock}
 \end{frame}
@@ -318,9 +296,6 @@
 		    }else{
 			naoLider(q);
 		    }
-
-
-
     \end{lstlisting}
   \end{exampleblock}
 \end{frame}
@@ -343,7 +318,6 @@
 	}
 	return;
     }
-
     \end{lstlisting}
   \end{exampleblock}
 \end{frame}
