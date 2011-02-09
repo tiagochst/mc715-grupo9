@@ -28,7 +28,7 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
     Process child; //@@@@@@@@@@@@@@@@@@@@@
     String filename = "mc715";
     String exec[];
-    String lider;
+    String lider = null;
     String root;
 
     Election(String address) {
@@ -48,19 +48,21 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
 
     synchronized public void process(WatchedEvent event) {
         synchronized (mutex) {
-            System.out.println("Process: " + event.getType());
-	    boolean isNodeDeleted = event.getType().equals(EventType.NodeDeleted);          // verify if this is the defined znode
-           boolean LiderAtual = event.getPath().equals(lider);
+	    if(event.getType() != Event.EventType.None) {
+		System.out.println("Process: " + event.getType());
+		boolean isNodeDeleted = event.getType().equals(EventType.NodeDeleted);          // verify if this is the defined znode
+		boolean LiderAtual = event.getPath().equals(lider);
 	   
-	   if (isNodeDeleted &&  LiderAtual) {
-	       System.out.println("O no lider caiu");
-	       //<strong>TODO</strong>: send an email or whatever
-	   }
+		if (isNodeDeleted &&  LiderAtual) {
+		    System.out.println("O no lider caiu");
+		    //<strong>TODO</strong>: send an email or whatever
+		    mutex.notify();
+		    notifyAll();
+		}
 	   
-	   mutex.notify();
-	   //	    notifyAll();
-	   //System.out.println("Notifiquei!!");
-        }
+		//System.out.println("Notifiquei!!");
+	    }
+	}
     }
 
  public void SetLider(String s) {
@@ -70,12 +72,12 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
     public void run() {
         try {
             synchronized (this) {
-                while (!dm.dead) {
+                //while (!dm.dead) {
 		    System.out.println("Rotina de verificacao: funcao run() election.java line 60");
 		    wait();
 		    System.out.println("Sai do wait!!!");
 
-                }
+		    //}
             }
         } catch (InterruptedException e) {
         }

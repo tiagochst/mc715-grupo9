@@ -101,7 +101,7 @@ public class DataMonitor implements Watcher, StatCallback {
         default:
             // Retry errors
             zk.exists(znode, true, this, null);
-            return;
+            return; 
         }
 
         byte b[] = null;
