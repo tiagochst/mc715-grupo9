@@ -120,13 +120,14 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{Tópicos}
-
-  \tableofcontents%[pausesections]
-
+  \frametitle{Como funciona?}
+  \begin{itemize}
+ \item Um cliente que quer ser o líder deve criar um znode efêmero e sequencial em "/ELECTION". 
+\item O cliente cujo znode possuir o menor ID é nomeado o líder, enquanto os outros clientes esperam enquanto esse não caia. 
+\item Caso o líder caia uma nova eleição é realizada.
+\item  Para que a queda seja conhecida, é colocado um watcher sobre o znode do líder que é disparado quando ele cai. 
+  \end{itemize}
 \end{frame}
-
-
 %-%-%-%-%-%-%-%-%-%-%-%
 %  Introdução         %
 %   - O que é o boot  %
@@ -135,9 +136,51 @@
 %-%-%-%-%-%-%-%-%-%-%-%
 \section{Introdução}
 
+
 \begin{frame}[fragile=singleslide]
-  \frametitle{Inserindo notificações no kernel}
-  \begin{exampleblock}{linux-2.6.22.19/init/main.c}
+  \frametitle{Líder caiu?}
+  \begin{exampleblock}{Election.java}
+    \begin{lstlisting}[basicstyle=\tiny]
+
+ synchronized public void process(WatchedEvent event) {
+        synchronized (mutex) {
+	    if(event.getType() != Event.EventType.None) {
+		boolean isNodeDeleted = event.getType().equals(EventType.NodeDeleted);          // Verifica se o evento eh de queda.
+		boolean LiderAtual = event.getPath().equals(lider); //Verifica se evento ocorreu no líder.
+		
+		if (isNodeDeleted &&  LiderAtual) {
+		    System.out.println("O no lider caiu");
+		    mutex.notify();
+		    notifyAll(); //Acorda clientes
+		}
+	    }
+	}
+    }
+    \end{lstlisting}
+  \end{exampleblock}
+
+  %try out     dmesg | less 
+
+\end{frame}
+
+
+\begin{frame}[fragile=singleslide]
+  \frametitle{Líder atual é atualizado}
+  \begin{exampleblock}{Election.java}
+    \begin{lstlisting}
+    /* Insere na classe o lider atual calculado pela classe queue. */
+    public void SetLider(String s) {
+	this.lider = s;
+    }
+
+    \end{lstlisting}
+  \end{exampleblock}
+
+\end{frame}
+
+\begin{frame}[fragile=singleslide]
+  \frametitle{Esperando líder cair}
+  \begin{exampleblock}{Election.java}
     \begin{lstlisting}
     public void run() {
         try {
@@ -156,26 +199,12 @@
 \end{frame}
 
 
-\begin{frame}[fragile=singleslide]
-  \frametitle{Inserindo notificações no kernel}
-  \begin{exampleblock}{linux-2.6.22.19/init/main.c}
-    \begin{lstlisting}
-    /* Insere na classe o lider atual calculado pela classe queue. */
-    public void SetLider(String s) {
-	this.lider = s;
-    }
-
-    \end{lstlisting}
-  \end{exampleblock}
-
-\end{frame}
-
 
 
 
 \begin{frame}[fragile=singleslide]
-  \frametitle{Inserindo notificações no kernel}
-  \begin{exampleblock}{linux-2.6.22.19/init/main.c}
+  \frametitle{Inserindo znode efêmero na disputa pela liderança}
+  \begin{exampleblock}{Election.java}
     \begin{lstlisting}
     	String produce(int i) throws KeeperException, InterruptedException{
 	    ByteBuffer b = ByteBuffer.allocate(4);
@@ -198,8 +227,8 @@
 
 
 \begin{frame}[fragile=singleslide]
-  \frametitle{Inserindo notificações no kernel}
-  \begin{exampleblock}{linux-2.6.22.19/init/main.c}
+  \frametitle{Quantos clientes estão querendo ser líder}
+  \begin{exampleblock}{Election.java}
     \begin{lstlisting}
 	int tamanho() throws KeeperException, InterruptedException{
 	    Stat stat = new Stat();
@@ -215,8 +244,8 @@
 
 
 \begin{frame}[fragile=singleslide]
-  \frametitle{Inserindo notificações no kernel}
-  \begin{exampleblock}{linux-2.6.22.19/init/main.c}
+  \frametitle{Qual é o menor ID?}
+  \begin{exampleblock}{Election.java}
     \begin{lstlisting}[basicstyle=\tiny]
 	String menor() throws KeeperException, InterruptedException{
 	    int retvalue = -1;
@@ -248,8 +277,8 @@
 
 
 \begin{frame}[fragile=singleslide]
-  \frametitle{Inserindo notificações no kernel}
-  \begin{exampleblock}{linux-2.6.22.19/init/main.c}
+  \frametitle{Monitoração do znode}
+  \begin{exampleblock}{Election.java}
     \begin{lstlisting}
 	void monitora(String s){
 	    this.dm = new DataMonitor(zk, "/ELECTION/n_" + s, null, this);
@@ -263,10 +292,9 @@
 
 
 \begin{frame}[fragile=singleslide]
-  \frametitle{Inserindo notificações no kernel}
-  \begin{exampleblock}{linux-2.6.22.19/init/main.c}
+  \frametitle{Criação de znode e espera pela queda do líder}
+  \begin{exampleblock}{Election.java}
     \begin{lstlisting}[basicstyle=\tiny]
-  /* Cada cliente cria seu znode e espera ser o lider. */
     public static void election(String args[]){
 	Queue q = new Queue(args[0], "/ELECTION");
 	try{
@@ -299,8 +327,8 @@
 
 
 \begin{frame}[fragile=singleslide]
-  \frametitle{Inserindo notificações no kernel}
-  \begin{exampleblock}{linux-2.6.22.19/init/main.c}
+  \frametitle{Função não líder}
+  \begin{exampleblock}{Election.java}
     \begin{lstlisting}
 
  static public void naoLider(Queue q){
