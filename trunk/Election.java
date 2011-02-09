@@ -199,7 +199,7 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
 	    }
 	}
 	
-	/* Iinicia monitoramento do no lider. */
+	/* Inicia monitoramento do no lider. */
 	void monitora(String s){
 	    this.dm = new DataMonitor(zk, "/ELECTION/n_" + s, null, this);
 	}
