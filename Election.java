@@ -226,25 +226,30 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
 		}
 		if(menor != aux){
 		    System.out.println("Menor filho:" + menor);
-		    aux = menor; 
+		    aux = menor;
 		    q.SetLider( "/ELECTION/n_" + q.menor());
 		    if(selfId == menor){ //Verifica se o menor id eh o meu.
 			System.out.println("Eu sou o lider\n");
-		    }
-		    else{
-			System.out.println("O lider nao sou eu");
-			System.out.println("Entao eu vou monitorar o lider...\n");
-			q.monitora(q.menor());
-			q.run();
-			System.out.println("Fique esperando algo acontecer...\n");
+		    }else{
+			naoLider(q);
 		    }
 		}
-	    } 
+	    }
 	} catch (KeeperException e){
-
 	} catch (InterruptedException e){
-
 	}
+    }
+    static public void naoLider(Queue q){
+	try{
+	    System.out.println("O lider nao sou eu");
+	    System.out.println("Entao eu vou monitorar o lider...\n");
+	    q.monitora(q.menor());
+	    q.run();
+	    System.out.println("Fique esperando algo acontecer...\n");
+	} catch (KeeperException e){
+	} catch (InterruptedException e){
+	}
+	return;
     }
 }
 
