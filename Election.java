@@ -106,16 +106,20 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
 
     public void exists(byte[] data) {
         if (data == null) {
-            if (child != null) {
+	    System.out.println("Data nao null\n");
+            if (child != null) 
+		System.out.println("child nao null");
                 System.out.println("Killing process");
                 child.destroy();
                 try {
+		    System.out.println("child wait for");
                     child.waitFor();
                 } catch (InterruptedException e) {
                 }
             }
             child = null;
         } else {
+	System.out.println("data null");
             if (child != null) {
                 System.out.println("Stopping child");
                 child.destroy();
