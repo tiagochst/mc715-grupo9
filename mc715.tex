@@ -49,7 +49,7 @@
 %%% usado para codigo %%%
 \usepackage{listings}
 \lstset{
-  language = C,
+  language = Java,
   basicstyle=\footnotesize\ttfamily, 
   numbers=left,               
   numberstyle=\tiny,         
@@ -135,179 +135,6 @@
 %-%-%-%-%-%-%-%-%-%-%-%
 \section{Introdução}
 
-
-\begin{frame}[fragile=singleslide]
-  \frametitle{Configurações }
-  \begin{exampleblock}{conf/node01.cfg}
-    \begin{lstlisting}
-# The number of milliseconds of each tick 
-tickTime=2000
-# The number of ticks that the initial
-# synchronization phase can take
-initLimit=10
-# The number of ticks that can pass between
-# sending a request and getting an acknowledgement
-syncLimit=5
-# the directory where the snapshot is stored.
-dataDir=/home/cluster/mc715u47/zookeeper-3.3.2/data/node01
-# the port at which the clients will connect
-clientPort=33999
-
-server.1=node01:33998:33997
-server.3=node03:33998:33997
-server.5=node05:33998:33997
-    \end{lstlisting}
-  \end{exampleblock}
-
-  %try out     dmesg | less 
-
-\end{frame}
-
-
-
-\begin{frame}[fragile]
-
-\frametitle{verbatim}
-\begin{verbatim}
-for i in range(1, 5):
-  print i
-else:
-  print "The for loop is over"
-\end{verbatim}
-\end{frame}
-
-\begin{frame}[fragile]
-\frametitle{Exemplo de fila em python}
-\newcommand\codeHighlight[1]{\textcolor[rgb]{1,0,0}{\textbf{#1}}}
-\begin{Verbatim}[commandchars=\\\{\}]
-\$ python queue.py
-Connected
-Queue already exists
-Enqueuing 10 items
-Numero de filhos: 1
-Numero de filhos: 2
-Numero de filhos: 3
-Numero de filhos: 4
-Numero de filhos: 5
-Numero de filhos: 6
-Numero de filhos: 7
-Numero de filhos: 8
-Numero de filhos: 9
-Numero de filhos: 10
-Done
-\end{Verbatim}
-\end{frame}
-
-
-
-
-\begin{frame}[fragile]
-\frametitle{Fila - Nó 3}
-\newcommand\codeHighlight[1]{\textcolor[rgb]{1,0,0}{\textbf{#1}}}
-\codeHighlight{Nó 3 desenfilera 8 itens do nó 5. (todos, menos os itens de número 4 e 9)}
- \begin{columns}
-      \begin{column}{.5\linewidth}
-\begin{Verbatim}[commandchars=\\\{\}]
-Thread 0: queue item 0
-Numero de filhos: -1
-Thread 1: queue item 1
-Numero de filhos: -2
-Thread 2: queue item 2
-Numero de filhos: -3
-Thread 3: queue item 3
-Numero de filhos: -4
-\end{Verbatim}
-
-  \end{column}
-      \begin{column}{.5\linewidth}
-\begin{Verbatim}[commandchars=\\\{\}]
-
-Thread 4: queue item 5
-Numero de filhos: -5
-Thread 0: queue item 6
-Numero de filhos: -6
-Thread 1: queue item 7
-Numero de filhos: -7
-Thread 2: queue item 8
-Numero de filhos: -8
-Done 
-\end{Verbatim}
-
-
-     \end{column}
-    \end{columns}
-\end{frame}
-
-
-
-
-\begin{frame}[fragile]
-\frametitle{Fila - Nó 5}
-\newcommand\codeHighlight[1]{\textcolor[rgb]{1,0,0}{\textbf{#1}}}
-\codeHighlight{Nó 5 desenfileira somente 2 itens, 4 e 9.}
-\begin{Verbatim}[commandchars=\\\{\}]
-Consuming all items in queue with 5 threads
-Thread 0: queue item 4
-Numero de filhos: 9
-Thread 0: queue item 9
-Numero de filhos: 8
-Done
-\end{Verbatim}
-\end{frame}
-
-
-
-
-
-
-
-
-
-
-
-
-\begin{frame}[fragile]
-\frametitle{Fila - Nó 3}
-\newcommand\codeHighlight[1]{\textcolor[rgb]{1,0,0}{\textbf{#1}}}
-%\codeHighlight{Nó 3 desenfilera 8 itens do nó 5. (todos, menos os itens de número 4 e 9)}
- \begin{columns}
-      \begin{column}{.5\linewidth}
-\begin{Verbatim}[commandchars=\\\{\}]
-Consuming all items in queue with 5 threads
-Thread 0: queue item 0
-Numero de filhos: 9
-Thread 2: queue item 2
-Numero de filhos: 8
-Thread 1: queue item 4
-Numero de filhos: 7
-Thread 3: queue item 6
-Numero de filhos: 6
-Thread 4: queue item 8
-Numero de filhos: 5
-\end{Verbatim}
-
-  \end{column}
-      \begin{column}{.5\linewidth}
-\begin{Verbatim}[commandchars=\\\{\}]
-
-Thread 0: queue item 1
-Numero de filhos: 4
-Thread 1: queue item 5
-Numero de filhos: 3
-Thread 2: queue item 3
-Numero de filhos: 2
-Thread 3: queue item 7
-Numero de filhos: 1
-Thread 4: queue item 9
-Numero de filhos: 0 
-\end{Verbatim}
-
-
-     \end{column}
-    \end{columns}
-\end{frame}
-
-
 \begin{frame}[fragile=singleslide]
   \frametitle{Inserindo notificações no kernel}
   \begin{exampleblock}{linux-2.6.22.19/init/main.c}
@@ -366,4 +193,131 @@ Numero de filhos: 0
   \end{exampleblock}
 
 \end{frame}
+
+
+
+
+\begin{frame}[fragile=singleslide]
+  \frametitle{Inserindo notificações no kernel}
+  \begin{exampleblock}{linux-2.6.22.19/init/main.c}
+    \begin{lstlisting}
+	int tamanho() throws KeeperException, InterruptedException{
+	    Stat stat = new Stat();
+	    zk.getData("/ELECTION", false, stat);
+	    
+	    return stat.getNumChildren();
+	}
+
+
+    \end{lstlisting}
+  \end{exampleblock}
+\end{frame}
+
+
+\begin{frame}[fragile=singleslide]
+  \frametitle{Inserindo notificações no kernel}
+  \begin{exampleblock}{linux-2.6.22.19/init/main.c}
+    \begin{lstlisting}[basicstyle=\tiny]
+	String menor() throws KeeperException, InterruptedException{
+	    int retvalue = -1;
+	    Stat stat = null;
+	    String aux = new String();
+ 
+	    while (true) {
+		List<String> list = zk.getChildren(root, true);
+		if(list.size() != 0){
+		    Integer min = new Integer(list.get(0).substring(7));
+		    aux = list.get(0).substring(2);
+		    for(String s : list){
+			Integer tempValue = new Integer(s.substring(7));
+			if(tempValue < min){
+			    min = tempValue;
+			    aux = s.substring(2);
+			}
+		    }
+		    return aux;
+		}
+		return INFINITO;
+	    }
+	}
+
+    \end{lstlisting}
+  \end{exampleblock}
+\end{frame}
+
+
+
+\begin{frame}[fragile=singleslide]
+  \frametitle{Inserindo notificações no kernel}
+  \begin{exampleblock}{linux-2.6.22.19/init/main.c}
+    \begin{lstlisting}
+	void monitora(String s){
+	    this.dm = new DataMonitor(zk, "/ELECTION/n_" + s, null, this);
+	}
+    }
+
+
+    \end{lstlisting}
+  \end{exampleblock}
+\end{frame}
+
+
+\begin{frame}[fragile=singleslide]
+  \frametitle{Inserindo notificações no kernel}
+  \begin{exampleblock}{linux-2.6.22.19/init/main.c}
+    \begin{lstlisting}[basicstyle=\tiny]
+  /* Cada cliente cria seu znode e espera ser o lider. */
+    public static void election(String args[]){
+	Queue q = new Queue(args[0], "/ELECTION");
+	try{
+	    int selfId = Integer.parseInt(q.produce(0).substring(13)); //Criacao do znode
+	    System.out.println("Meu ID: " + selfId);
+
+	    List<String> list = q.zk.getChildren("/ELECTION", true);
+	    int aux = -1;
+	    while (q.tamanho() != 0) {
+		Integer menor = new Integer(q.menor());
+		if(selfId < menor){
+		    System.out.println("Eu morri!!");
+		    return;
+		}
+		if(menor != aux){
+		    System.out.println("Menor filho:" + menor);
+		    aux = menor;
+		    q.SetLider( "/ELECTION/n_" + q.menor());
+		    if(selfId == menor){ //Verifica se o menor id eh o meu.
+			System.out.println("Eu sou o lider\n");
+		    }else{
+			naoLider(q);
+		    }
+
+
+
+    \end{lstlisting}
+  \end{exampleblock}
+\end{frame}
+
+
+\begin{frame}[fragile=singleslide]
+  \frametitle{Inserindo notificações no kernel}
+  \begin{exampleblock}{linux-2.6.22.19/init/main.c}
+    \begin{lstlisting}
+
+ static public void naoLider(Queue q){
+	try{
+	    System.out.println("O lider nao sou eu");
+	    System.out.println("Entao eu vou monitorar o lider...\n");
+	    q.monitora(q.menor());
+	    q.run();
+	    System.out.println("Fique esperando algo acontecer...\n");
+	} catch (KeeperException e){
+	} catch (InterruptedException e){
+	}
+	return;
+    }
+
+    \end{lstlisting}
+  \end{exampleblock}
+\end{frame}
+
 \end{document}
