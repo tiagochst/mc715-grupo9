@@ -288,7 +288,7 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
 		    else{
 			System.out.println("O lider nao sou eu");
 			System.out.println("Entao eu vou monitorar o lider...\n");
-			q.SetLider( "/ELECTION/n_" + q.menor())
+			q.SetLider( "/ELECTION/n_" + q.menor());
 			q.monitora(q.menor());
 			q.run();
 			System.out.println("Fique esperando algo acontecer...\n");
