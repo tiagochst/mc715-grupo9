@@ -25,9 +25,6 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
     static Integer mutex;
     DataMonitor dm;
 
-    Process child; //@@@@@@@@@@@@@@@@@@@@@
-    String filename = "mc715";
-    String exec[];
     String lider = null;
     String root;
 
@@ -43,41 +40,34 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
                 zk = null;
             }
         }
-        //else mutex = new Integer(-1);
     }
-
+    /* Verifica processo de queda do no lider.
+     * Caso o lider caia, acorda clientes que querem ser o lider.
+     * Cada cliente verifica o novo lider.
+     */
     synchronized public void process(WatchedEvent event) {
         synchronized (mutex) {
 	    if(event.getType() != Event.EventType.None) {
-		System.out.println("Process: " + event.getType());
-		boolean isNodeDeleted = event.getType().equals(EventType.NodeDeleted);          // verify if this is the defined znode
-		boolean LiderAtual = event.getPath().equals(lider);
-	   
+		boolean isNodeDeleted = event.getType().equals(EventType.NodeDeleted);          // Verifica se o evento eh de queda.
+		boolean LiderAtual = event.getPath().equals(lider); //Verifica se evento ocorreu no lider.
+		
 		if (isNodeDeleted &&  LiderAtual) {
 		    System.out.println("O no lider caiu");
-		    //<strong>TODO</strong>: send an email or whatever
 		    mutex.notify();
-		    notifyAll();
+		    notifyAll(); //Acorda clientes
 		}
-	   
-		//System.out.println("Notifiquei!!");
 	    }
 	}
     }
-
- public void SetLider(String s) {
-     this.lider = s;
- }
+    /* Insere na classe o lider atual calculado pela classe queue. */
+    public void SetLider(String s) {
+	this.lider = s;
+    }
 
     public void run() {
         try {
             synchronized (this) {
-                //while (!dm.dead) {
-		    System.out.println("Rotina de verificacao: funcao run() election.java line 60");
-		    wait();
-		    System.out.println("Sai do wait!!!");
-
-		    //}
+		wait(); // Espera lider cair
             }
         } catch (InterruptedException e) {
         }
@@ -85,7 +75,6 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
 
     public void closing(int rc) {
         synchronized (this) {
-	    System.out.println("Rotina de verificacao: funcao closing() election.java line 60");
 	    notifyAll();
         }
     }
@@ -111,14 +100,11 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
                 }
             } catch (IOException e) {
             }
-
 	}
     }
 
     public void exists(byte[] data) {
-
-	    System.out.println("Starting child");
-	
+	// Funcao nao usada. Executada quando ocorre mudancas no lider.
     }
     
 
@@ -173,48 +159,8 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
 			     CreateMode.EPHEMERAL_SEQUENTIAL);
 	}
 
-
-	/**
-	 * Remove first element from the queue.
-	 *
-	 * @return
-	 * @throws KeeperException
-	 * @throws InterruptedException
-	 */
-	int consume() throws KeeperException, InterruptedException{
-	    int retvalue = -1;
-	    Stat stat = null;
-
-	    // Get the first element available
-	    while (true) {
-		synchronized (mutex) {
-		    List<String> list = zk.getChildren(root, true);
-		    if (list.size() == 0) {
-			System.out.println("Going to wait");
-			mutex.wait();
-		    } else {
-			Integer min = new Integer(list.get(0).substring(7));
-			for(String s : list){
-			    Integer tempValue = new Integer(s.substring(7));
-			    //System.out.println("Temporary value: " + tempValue);
-			    if(tempValue < min) min = tempValue;
-			}
-			System.out.println("Temporary value: " + root + "/element" + min);
-			byte[] b = zk.getData(root + "/element" + min,
-					      false, stat);
-			zk.delete(root + "/element" + min, 0);
-			ByteBuffer buffer = ByteBuffer.wrap(b);
-			retvalue = buffer.getInt();
-
-			return retvalue;
-		    }
-		}
-	    }
-	}
-
+	/* Retorna numero de clientes esperando para ser lider. */
 	int tamanho() throws KeeperException, InterruptedException{
-	    //List<String> list = zk.getChildren(root, true);
-	    //return list.size();
 	    Stat stat = new Stat();
 	    zk.getData("/ELECTION", false, stat);
 	    
@@ -247,51 +193,49 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
 			   
 			}
 		    }
-		    // System.out.println("Variavel aux: " + aux);
 		    return aux;
 		}
 		return "-1";
 	    }
 	}
 	
+	/* Iinicia monitoramento do no lider. */
 	void monitora(String s){
-	    System.out.println("ROTINA DE VERIFICACO FUNCAO MONITORA valor de s"+ s);
 	    this.dm = new DataMonitor(zk, "/ELECTION/n_" + s, null, this);
 	}
-	
     }
 
     public static void main(String args[]) {
 	election(args);           
     }
     
+    /* Cada cliente cria seu znode e espera ser o lider. */
     public static void election(String args[]){
 	Queue q = new Queue(args[0], "/ELECTION");
 	try{
-	    int selfId = Integer.parseInt(q.produce(0).substring(13));
-	    //	    q.produce(0);
-	    // q.produce(0);
-	    // q.produce(0);
-	    System.out.println("Id do filho " + selfId);
+	    int selfId = Integer.parseInt(q.produce(0).substring(13)); //Criacao do znode
+	    System.out.println("Meu ID: " + selfId);
 
 	    List<String> list = q.zk.getChildren("/ELECTION", true);
 	    int aux = -1;
 	    while (q.tamanho() != 0) {
 		Integer menor = new Integer(q.menor());
+		if(selfId < menor){
+		    System.out.println("Eu morri!!");
+		    return;
+		}
 		if(menor != aux){
 		    System.out.println("Menor filho:" + menor);
-		    aux = menor;
-		    if(selfId == menor){ 
+		    aux = menor; 
+		    q.SetLider( "/ELECTION/n_" + q.menor());
+		    if(selfId == menor){ //Verifica se o menor id eh o meu.
 			System.out.println("Eu sou o lider\n");
-			//sleep(200000);
-			q.monitora(q.menor());
-			q.run();
-			//	while(true);
+			//q.monitora(q.menor());
+			//	q.run();
 		    }
 		    else{
 			System.out.println("O lider nao sou eu");
 			System.out.println("Entao eu vou monitorar o lider...\n");
-			q.SetLider( "/ELECTION/n_" + q.menor());
 			q.monitora(q.menor());
 			q.run();
 			System.out.println("Fique esperando algo acontecer...\n");
