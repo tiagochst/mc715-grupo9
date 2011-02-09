@@ -101,7 +101,7 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
             } catch (IOException e) {
             }
 
-	   }
+	}
     }
 
     public void exists(byte[] data) {
@@ -109,48 +109,48 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
 	    System.out.println("Data nao null\n");
             if (child != null) 
 		System.out.println("child nao null");
-                System.out.println("Killing process");
-                child.destroy();
-                try {
-		    System.out.println("child wait for");
-                    child.waitFor();
-                } catch (InterruptedException e) {
-                }
-            }
-            child = null;
-        } else {
-	System.out.println("data null");
-            if (child != null) {
-                System.out.println("Stopping child");
-                child.destroy();
-                try {
-                    child.waitFor();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
+	    System.out.println("Killing process");
+	    child.destroy();
+	    try {
+		System.out.println("child wait for");
+		child.waitFor();
+	    } catch (InterruptedException e) {
+	    }
+	
+	    child = null;
+	} else {
+	    System.out.println("data null");
+	    if (child != null) {
+		System.out.println("Stopping child");
+		child.destroy();
+		try {
+		    child.waitFor();
+		} catch (InterruptedException e) {
+		    e.printStackTrace();
+		}
+	    }
 	    /*	     try {
-                FileOutputStream fos = new FileOutputStream(filename);
-                fos.write(data);
-                fos.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-		}*/
+		     FileOutputStream fos = new FileOutputStream(filename);
+		     fos.write(data);
+		     fos.close();
+		     } catch (IOException e) {
+		     e.printStackTrace();
+		     }*/
 	    //  try {
-                System.out.println("Starting child");
-		//child = Runtime.getRuntime().exec(exec);
-                //new StreamWriter(child.getInputStream(), System.out);
-                //new StreamWriter(child.getErrorStream(), System.err);
+	    System.out.println("Starting child");
+	    //child = Runtime.getRuntime().exec(exec);
+	    //new StreamWriter(child.getInputStream(), System.out);
+	    //new StreamWriter(child.getErrorStream(), System.err);
 
-		/*
-		  Acredito que aqui seja a execucao do executavel
-		  No nosso caso ele deve procurar o novo lider
-		 */
+	    /*
+	      Acredito que aqui seja a execucao do executavel
+	      No nosso caso ele deve procurar o novo lider
+	    */
 
-		//  } catch (IOException e) {
-		//	e.printStackTrace();
-		//}
-        }
+	    //  } catch (IOException e) {
+	    //	e.printStackTrace();
+	    //}
+	}
     }
     
 
@@ -160,91 +160,91 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
      */
     static public class Queue extends Election {
 
-        /**
-         * Constructor of producer-consumer queue
-         *
-         * @param address
-         * @param name
-         */
-        Queue(String address, String name) {
-            super(address);
-            this.root = name;
-            // Create ZK node name
-            if (zk != null) {
-                try {
-                    Stat s = zk.exists(root, false);
-                    if (s == null) {
-                        zk.create(root, new byte[0], Ids.OPEN_ACL_UNSAFE,
+	/**
+	 * Constructor of producer-consumer queue
+	 *
+	 * @param address
+	 * @param name
+	 */
+	Queue(String address, String name) {
+	    super(address);
+	    this.root = name;
+	    // Create ZK node name
+	    if (zk != null) {
+		try {
+		    Stat s = zk.exists(root, false);
+		    if (s == null) {
+			zk.create(root, new byte[0], Ids.OPEN_ACL_UNSAFE,
 				  CreateMode.PERSISTENT);
-                    }
-                } catch (KeeperException e) {
-                    System.out
+		    }
+		} catch (KeeperException e) {
+		    System.out
 			.println("Keeper exception when instantiating queue: "
 				 + e.toString());
-                } catch (InterruptedException e) {
-                    System.out.println("Interrupted exception");
-                }
-            }
-        }
+		} catch (InterruptedException e) {
+		    System.out.println("Interrupted exception");
+		}
+	    }
+	}
 
-        /**
-         * Add element to the queue.
-         *
-         * @param i
-         * @return Znode
-         */
+	/**
+	 * Add element to the queue.
+	 *
+	 * @param i
+	 * @return Znode
+	 */
 
 	String produce(int i) throws KeeperException, InterruptedException{
-            ByteBuffer b = ByteBuffer.allocate(4);
-            byte[] value;
+	    ByteBuffer b = ByteBuffer.allocate(4);
+	    byte[] value;
 
-            // Add child with value i
-            b.putInt(i);
-            value = b.array();
-            return zk.create(root + "/n_", value, Ids.OPEN_ACL_UNSAFE,
+	    // Add child with value i
+	    b.putInt(i);
+	    value = b.array();
+	    return zk.create(root + "/n_", value, Ids.OPEN_ACL_UNSAFE,
 			     CreateMode.EPHEMERAL_SEQUENTIAL);
-        }
+	}
 
 
-        /**
-         * Remove first element from the queue.
-         *
-         * @return
-         * @throws KeeperException
-         * @throws InterruptedException
-         */
-        int consume() throws KeeperException, InterruptedException{
-            int retvalue = -1;
-            Stat stat = null;
+	/**
+	 * Remove first element from the queue.
+	 *
+	 * @return
+	 * @throws KeeperException
+	 * @throws InterruptedException
+	 */
+	int consume() throws KeeperException, InterruptedException{
+	    int retvalue = -1;
+	    Stat stat = null;
 
-            // Get the first element available
-            while (true) {
-                synchronized (mutex) {
-                    List<String> list = zk.getChildren(root, true);
-                    if (list.size() == 0) {
-                        System.out.println("Going to wait");
-                        mutex.wait();
-                    } else {
-                        Integer min = new Integer(list.get(0).substring(7));
-                        for(String s : list){
-                            Integer tempValue = new Integer(s.substring(7));
-                            //System.out.println("Temporary value: " + tempValue);
-                            if(tempValue < min) min = tempValue;
-                        }
-                        System.out.println("Temporary value: " + root + "/element" + min);
-                        byte[] b = zk.getData(root + "/element" + min,
+	    // Get the first element available
+	    while (true) {
+		synchronized (mutex) {
+		    List<String> list = zk.getChildren(root, true);
+		    if (list.size() == 0) {
+			System.out.println("Going to wait");
+			mutex.wait();
+		    } else {
+			Integer min = new Integer(list.get(0).substring(7));
+			for(String s : list){
+			    Integer tempValue = new Integer(s.substring(7));
+			    //System.out.println("Temporary value: " + tempValue);
+			    if(tempValue < min) min = tempValue;
+			}
+			System.out.println("Temporary value: " + root + "/element" + min);
+			byte[] b = zk.getData(root + "/element" + min,
 					      false, stat);
-		        zk.delete(root + "/element" + min, 0);
-                        ByteBuffer buffer = ByteBuffer.wrap(b);
-                        retvalue = buffer.getInt();
+			zk.delete(root + "/element" + min, 0);
+			ByteBuffer buffer = ByteBuffer.wrap(b);
+			retvalue = buffer.getInt();
 
-                        return retvalue;
-                    }
-                }
-            }
-        }
+			return retvalue;
+		    }
+		}
+	    }
+	}
 
-        int tamanho() throws KeeperException, InterruptedException{
+	int tamanho() throws KeeperException, InterruptedException{
 	    //List<String> list = zk.getChildren(root, true);
 	    //return list.size();
 	    Stat stat = new Stat();
@@ -253,20 +253,20 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
 	    return stat.getNumChildren();
 	}
 
-        /**
-         * Acha o menor elemento da fila.
-         *
-         * @return menor ID
-         * @throws KeeperException
-         * @throws InterruptedException
-         */
-        String menor() throws KeeperException, InterruptedException{
-            int retvalue = -1;
-            Stat stat = null;
+	/**
+	 * Acha o menor elemento da fila.
+	 *
+	 * @return menor ID
+	 * @throws KeeperException
+	 * @throws InterruptedException
+	 */
+	String menor() throws KeeperException, InterruptedException{
+	    int retvalue = -1;
+	    Stat stat = null;
 	    String aux = new String();
 
-            // Get the first element available
-            while (true) {
+	    // Get the first element available
+	    while (true) {
 		List<String> list = zk.getChildren(root, true);
 		if(list.size() != 0){
 		    Integer min = new Integer(list.get(0).substring(7));
