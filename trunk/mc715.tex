@@ -312,13 +312,58 @@ Numero de filhos: 0
   \frametitle{Inserindo notificações no kernel}
   \begin{exampleblock}{linux-2.6.22.19/init/main.c}
     \begin{lstlisting}
-  printk(KERN_WARNING "I am a kernel hacker!\n");
-  /* Função que imprime mensagem
-     durante o processo de boot...YES!! */
+    public void run() {
+        try {
+            synchronized (this) {
+		wait(); // Espera lider cair
+            }
+        } catch (InterruptedException e) {
+        }
+    }
+
     \end{lstlisting}
   \end{exampleblock}
 
   %try out     dmesg | less 
+
+\end{frame}
+
+
+\begin{frame}[fragile=singleslide]
+  \frametitle{Inserindo notificações no kernel}
+  \begin{exampleblock}{linux-2.6.22.19/init/main.c}
+    \begin{lstlisting}
+    /* Insere na classe o lider atual calculado pela classe queue. */
+    public void SetLider(String s) {
+	this.lider = s;
+    }
+
+    \end{lstlisting}
+  \end{exampleblock}
+
+\end{frame}
+
+
+
+
+\begin{frame}[fragile=singleslide]
+  \frametitle{Inserindo notificações no kernel}
+  \begin{exampleblock}{linux-2.6.22.19/init/main.c}
+    \begin{lstlisting}
+    	String produce(int i) throws KeeperException, InterruptedException{
+	    ByteBuffer b = ByteBuffer.allocate(4);
+	    byte[] value;
+
+	    // Add child with value i
+	    b.putInt(i);
+	    value = b.array();
+	    return zk.create(root + "/n_", value, Ids.OPEN_ACL_UNSAFE,
+			     CreateMode.EPHEMERAL_SEQUENTIAL);
+	}
+
+
+    \end{lstlisting}
+  \end{exampleblock}
 
 \end{frame}
 \end{document}
