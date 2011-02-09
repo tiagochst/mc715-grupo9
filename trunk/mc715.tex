@@ -1,0 +1,309 @@
+%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%
+%  MC514 Sistemas Operacionais: Teoria e Prática  %  
+%  Projeto Final: Inicialização do Linux (Boot)   %
+%  Data:26/06/2010                                %
+%  Unicamp,Campinas,São Paulo,Brasil              %
+%  Grupo:                                         %
+%    - Alexandre Nobuo Kunieda                    %
+%    - Daniel Catarino Biscalchin                 %
+%    - Daniel Naoyoshi Fukuciro Parrode           %
+%    - Tiago Chedraoui Silva                      %
+%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%
+\documentclass[dvips,11pt]{beamer}
+
+%%% fontes %%%
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+\usepackage[brazil]{babel}    % dá suporte para os termos na língua portuguesa do Brasi
+
+
+%%% matematicos %%%
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathptmx}
+
+\usepackage{multicol}  
+%%% figuras %%%
+\usepackage{graphicx}
+\usepackage{wrapfig}
+
+
+%%% tabelas %%%
+\usepackage{colortbl}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{fancyvrb}
+\usepackage{color}
+
+%%% outros %%%
+\usepackage{url}
+\usepackage{textcomp}
+\usepackage{hyperref} %internal links
+\usepackage{color}       
+\usepackage{indentfirst} %retira padrao americano de paragrafos
+\usepackage{multicol}    
+\numberwithin{table}{section}
+\numberwithin{figure}{section} %numercao de figuras por secao
+
+
+%%% usado para codigo %%%
+\usepackage{listings}
+\lstset{
+  language = C,
+  basicstyle=\footnotesize\ttfamily, 
+  numbers=left,               
+  numberstyle=\tiny,         
+  %stepnumber=2,              
+  numbersep=5pt,             
+  tabsize=2,                  
+  extendedchars=true,  
+  breaklines=true,       
+  keywordstyle=\color{blue},
+  frame=b,         
+  stringstyle=\color{green}\ttfamily, 
+  showspaces=false,          
+  showtabs=false,             
+  xleftmargin=17pt,
+  framexleftmargin=17pt,
+  framexrightmargin=5pt,
+  framexbottommargin=4pt,
+  %backgroundcolor=\color{lightgray},
+  showstringspaces=false              
+}
+\lstloadlanguages{C}
+\usepackage{caption}
+\DeclareCaptionFont{white}{\color{white}}
+\DeclareCaptionFont{green}{\color{green}}
+\DeclareCaptionFormat{listing}{\colorbox[cmyk]{0.43, 0.35, 0.35,0.01}{\parbox{\textwidth}{\hspace{15pt}#1#2#3}}}
+\captionsetup[lstlisting]{format=listing,labelfont=white,textfont=white, singlelinecheck=false, margin=0pt, font={bf,footnotesize}}
+
+
+%%% extras %%%
+\RequirePackage{marvosym} % figuras \Letter \Email 
+\usepackage{fancyhdr}     % Headers
+\usepackage{epsf}
+
+
+%%% Beamer style %%%
+%\usetheme{Warsaw}      % estilos slides
+%\usefonttheme[onlylarge]{structurebold}   % fontes em negrito
+\setbeamertemplate{navigation symbols}{}  % barra de navegacao superior
+\setbeamerfont*{frametitle}{size=\normalsize,series=\bfseries} %define tamanhos de letras
+\setbeamertemplate{note page}{plain}      % não sei
+\setbeamercovered{transparent}
+
+%-%-%-%-%-%-%-%-%-%
+%  Inicio Slides  %
+%-%-%-%-%-%-%-%-%-%
+
+%%% CAPA %%%
+\title{Utilização de primitivas no Zookeeper}                                
+\author[Douglas A.,Marcelo K.,Tiago S.]{
+  Douglas Alves \\
+  \and Marcelo Keith   \\
+  \and Tiago Silva  
+}
+\institute{Universidade Estadual de Campinas}
+\date{\today}
+%%% END CAPA %%%
+
+
+\begin{document}
+
+
+%-%-%-%-%-%-%
+%  Capa     %
+%  Topicos  %
+%-%-%-%-%-%-%
+\begin{frame}
+  \titlepage % slide 1 - capa
+\end{frame}
+
+\begin{frame}
+  \frametitle{Tópicos}
+
+  \tableofcontents%[pausesections]
+
+\end{frame}
+
+
+%-%-%-%-%-%-%-%-%-%-%-%
+%  Introdução         %
+%   - O que é o boot  %
+%   - Utilidades      %
+%   - Dificuldades    %
+%-%-%-%-%-%-%-%-%-%-%-%
+\section{Introdução}
+
+
+\begin{frame}[fragile=singleslide]
+  \frametitle{Configurações }
+  \begin{exampleblock}{conf/node01.cfg}
+    \begin{lstlisting}
+# The number of milliseconds of each tick 
+tickTime=2000
+# The number of ticks that the initial
+# synchronization phase can take
+initLimit=10
+# The number of ticks that can pass between
+# sending a request and getting an acknowledgement
+syncLimit=5
+# the directory where the snapshot is stored.
+dataDir=/home/cluster/mc715u47/zookeeper-3.3.2/data/node01
+# the port at which the clients will connect
+clientPort=33999
+
+server.1=node01:33998:33997
+server.3=node03:33998:33997
+server.5=node05:33998:33997
+    \end{lstlisting}
+  \end{exampleblock}
+
+  %try out     dmesg | less 
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+
+\frametitle{verbatim}
+\begin{verbatim}
+for i in range(1, 5):
+  print i
+else:
+  print "The for loop is over"
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Exemplo de fila em python}
+\newcommand\codeHighlight[1]{\textcolor[rgb]{1,0,0}{\textbf{#1}}}
+\begin{Verbatim}[commandchars=\\\{\}]
+\$ python queue.py
+Connected
+Queue already exists
+Enqueuing 10 items
+Numero de filhos: 1
+Numero de filhos: 2
+Numero de filhos: 3
+Numero de filhos: 4
+Numero de filhos: 5
+Numero de filhos: 6
+Numero de filhos: 7
+Numero de filhos: 8
+Numero de filhos: 9
+Numero de filhos: 10
+Done
+\end{Verbatim}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Fila - Nó 3}
+\newcommand\codeHighlight[1]{\textcolor[rgb]{1,0,0}{\textbf{#1}}}
+\codeHighlight{Nó 3 desenfilera 8 itens do nó 5. (todos, menos os itens de número 4 e 9)}
+ \begin{columns}
+      \begin{column}{.5\linewidth}
+\begin{Verbatim}[commandchars=\\\{\}]
+Thread 0: queue item 0
+Numero de filhos: -1
+Thread 1: queue item 1
+Numero de filhos: -2
+Thread 2: queue item 2
+Numero de filhos: -3
+Thread 3: queue item 3
+Numero de filhos: -4
+\end{Verbatim}
+
+  \end{column}
+      \begin{column}{.5\linewidth}
+\begin{Verbatim}[commandchars=\\\{\}]
+
+Thread 4: queue item 5
+Numero de filhos: -5
+Thread 0: queue item 6
+Numero de filhos: -6
+Thread 1: queue item 7
+Numero de filhos: -7
+Thread 2: queue item 8
+Numero de filhos: -8
+Done 
+\end{Verbatim}
+
+
+     \end{column}
+    \end{columns}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Fila - Nó 5}
+\newcommand\codeHighlight[1]{\textcolor[rgb]{1,0,0}{\textbf{#1}}}
+\codeHighlight{Nó 5 desenfileira somente 2 itens, 4 e 9.}
+\begin{Verbatim}[commandchars=\\\{\}]
+Consuming all items in queue with 5 threads
+Thread 0: queue item 4
+Numero de filhos: 9
+Thread 0: queue item 9
+Numero de filhos: 8
+Done
+\end{Verbatim}
+\end{frame}
+
+
+
+
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]
+\frametitle{Fila - Nó 3}
+\newcommand\codeHighlight[1]{\textcolor[rgb]{1,0,0}{\textbf{#1}}}
+%\codeHighlight{Nó 3 desenfilera 8 itens do nó 5. (todos, menos os itens de número 4 e 9)}
+ \begin{columns}
+      \begin{column}{.5\linewidth}
+\begin{Verbatim}[commandchars=\\\{\}]
+Consuming all items in queue with 5 threads
+Thread 0: queue item 0
+Numero de filhos: 9
+Thread 2: queue item 2
+Numero de filhos: 8
+Thread 1: queue item 4
+Numero de filhos: 7
+Thread 3: queue item 6
+Numero de filhos: 6
+Thread 4: queue item 8
+Numero de filhos: 5
+\end{Verbatim}
+
+  \end{column}
+      \begin{column}{.5\linewidth}
+\begin{Verbatim}[commandchars=\\\{\}]
+
+Thread 0: queue item 1
+Numero de filhos: 4
+Thread 1: queue item 5
+Numero de filhos: 3
+Thread 2: queue item 3
+Numero de filhos: 2
+Thread 3: queue item 7
+Numero de filhos: 1
+Thread 4: queue item 9
+Numero de filhos: 0 
+\end{Verbatim}
+
+
+     \end{column}
+    \end{columns}
+\end{frame}
+\end{document}
