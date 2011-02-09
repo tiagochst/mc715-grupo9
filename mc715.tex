@@ -306,4 +306,19 @@ Numero de filhos: 0
      \end{column}
     \end{columns}
 \end{frame}
+
+
+\begin{frame}[fragile=singleslide]
+  \frametitle{Inserindo notificações no kernel}
+  \begin{exampleblock}{linux-2.6.22.19/init/main.c}
+    \begin{lstlisting}
+  printk(KERN_WARNING "I am a kernel hacker!\n");
+  /* Função que imprime mensagem
+     durante o processo de boot...YES!! */
+    \end{lstlisting}
+  \end{exampleblock}
+
+  %try out     dmesg | less 
+
+\end{frame}
 \end{document}
