@@ -25,9 +25,8 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
     DataMonitor dm;
 
     Process child; //@@@@@@@@@@@@@@@@@@@@@
-    String filename;
+    String filename = "mc715";
     String exec[];
-
 
     String root;
 
@@ -48,17 +47,25 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
 
     synchronized public void process(WatchedEvent event) {
         synchronized (mutex) {
-            //System.out.println("Process: " + event.getType());
+            System.out.println("Process: " + event.getType());
             mutex.notify();
+	    //	    notifyAll();
+	    //System.out.println("Notifiquei!!");
         }
     }
+
+
+
 
 
     public void run() {
         try {
             synchronized (this) {
                 while (!dm.dead) {
+		    System.out.println("Rotina de verificacao: funcao run() election.java line 60");
 		    wait();
+		    System.out.println("Sai do wait!!!");
+
                 }
             }
         } catch (InterruptedException e) {
@@ -67,7 +74,8 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
 
     public void closing(int rc) {
         synchronized (this) {
-            notifyAll();
+	    System.out.println("Rotina de verificacao: funcao closing() election.java line 60");
+	    notifyAll();
         }
     }
 
@@ -83,7 +91,7 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
             start();
         }
 
-	/*	   public void run() {
+	public void run() {
             byte b[] = new byte[80];
             int rc;
             try {
@@ -93,7 +101,7 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
             } catch (IOException e) {
             }
 
-	   }*/
+	   }
     }
 
     public void exists(byte[] data) {
@@ -117,24 +125,30 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
                     e.printStackTrace();
                 }
             }
-	    /* try {
+	    /*	     try {
                 FileOutputStream fos = new FileOutputStream(filename);
                 fos.write(data);
                 fos.close();
             } catch (IOException e) {
                 e.printStackTrace();
 		}*/
-	    //try {
+	    //  try {
                 System.out.println("Starting child");
-		/*  child = Runtime.getRuntime().exec(exec);
-                new StreamWriter(child.getInputStream(), System.out);
-                new StreamWriter(child.getErrorStream(), System.err);
-		         } catch (IOException e) {
-		            e.printStackTrace();
-			    }*/
+		//child = Runtime.getRuntime().exec(exec);
+                //new StreamWriter(child.getInputStream(), System.out);
+                //new StreamWriter(child.getErrorStream(), System.err);
+
+		/*
+		  Acredito que aqui seja a execucao do executavel
+		  No nosso caso ele deve procurar o novo lider
+		 */
+
+		//  } catch (IOException e) {
+		//	e.printStackTrace();
+		//}
         }
     }
-
+    
 
 
     /**
@@ -261,7 +275,7 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
 			   
 			}
 		    }
-		    System.out.println("Variavel aux: " + aux);
+		    // System.out.println("Variavel aux: " + aux);
 		    return aux;
 		}
 		return "-1";
@@ -269,6 +283,7 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
 	}
 	
 	void monitora(String s){
+	    System.out.println("ROTINA DE VERIFICACO FUNCAO MONITORA valor de s"+ s);
 	    this.dm = new DataMonitor(zk, "/ELECTION/n_" + s, null, this);
 	}
 	
@@ -282,7 +297,9 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
 	Queue q = new Queue(args[0], "/ELECTION");
 	try{
 	    int selfId = Integer.parseInt(q.produce(0).substring(13));
-	    q.produce(0);
+	    //	    q.produce(0);
+	    // q.produce(0);
+	    // q.produce(0);
 	    System.out.println("Id do filho " + selfId);
 
 	    List<String> list = q.zk.getChildren("/ELECTION", true);
@@ -292,13 +309,19 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
 		if(menor != aux){
 		    System.out.println("Menor filho:" + menor);
 		    aux = menor;
-		    if(selfId == menor) 
+		    if(selfId == menor){ 
 			System.out.println("Eu sou o lider\n");
+			//sleep(200000);
+			q.monitora(q.menor());
+			q.run();
+			//	while(true);
+		    }
 		    else{
 			System.out.println("O lider nao sou eu");
 			System.out.println("Entao eu vou monitorar o lider...\n");
 			q.monitora(q.menor());
 			q.run();
+			System.out.println("Fique esperando algo acontecer...\n");
 		    }
 		}
 	    } 
