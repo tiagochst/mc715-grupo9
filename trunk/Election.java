@@ -230,8 +230,6 @@ public class Election implements Watcher,Runnable , DataMonitor.DataMonitorListe
 		    q.SetLider( "/ELECTION/n_" + q.menor());
 		    if(selfId == menor){ //Verifica se o menor id eh o meu.
 			System.out.println("Eu sou o lider\n");
-			//q.monitora(q.menor());
-			//	q.run();
 		    }
 		    else{
 			System.out.println("O lider nao sou eu");
