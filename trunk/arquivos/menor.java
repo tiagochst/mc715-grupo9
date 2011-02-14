@@ -14,11 +14,10 @@ String menor() throws KeeperException, InterruptedException{
 		if(tempValue < min){
 		    min = tempValue;
 		    aux = s.substring(2);
-                           
 		}
 	    }
 	    return aux;
 	}
-	return "99999999999999999999";
+	return INFINITO;
     }
 }
