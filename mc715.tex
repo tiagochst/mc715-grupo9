@@ -137,10 +137,7 @@
 \begin{frame}[fragile=singleslide]
   \frametitle{Líder caiu?}
   \begin{exampleblock}{Election.java}
-%    \begin{lstlisting}[basicstyle=\tiny]
-\lstinputlisting[label=sched.c,basicstyle=\tiny]{process.java}
- 
-%    \end{lstlisting}
+    \lstinputlisting[basicstyle=\tiny]{arquivos/process.java}
   \end{exampleblock}
 \end{frame}
 
@@ -148,48 +145,22 @@
 \begin{frame}[fragile=singleslide]
   \frametitle{Líder atual é atualizado}
   \begin{exampleblock}{Election.java}
-    \begin{lstlisting}
-      /* Insere na classe o lider atual calculado pela classe queue. */
-      public void SetLider(String s) {
-	this.lider = s;
-      }
-
-    \end{lstlisting}
-  \end{exampleblock}
+   \lstinputlisting{arquivos/setlider.java}
+    \end{exampleblock}
 
 \end{frame}
 
 \begin{frame}[fragile=singleslide]
   \frametitle{Esperando líder cair}
   \begin{exampleblock}{Election.java}
-    \begin{lstlisting}
-      public void run() {
-        try {
-          synchronized (this) {
-            wait(); // Espera lider cair
-          }
-        } catch (InterruptedException e) {
-        }
-      }
-    \end{lstlisting}
+   \lstinputlisting{arquivos/run.java}
   \end{exampleblock}
 \end{frame}
 
 \begin{frame}[fragile=singleslide]
   \frametitle{Inserindo znode efêmero na disputa pela liderança}
   \begin{exampleblock}{Election.java}
-    \begin{lstlisting}
-      String produce(int i) throws KeeperException, InterruptedException{
-        ByteBuffer b = ByteBuffer.allocate(4);
-        byte[] value;
-
-        // Add child with value i
-        b.putInt(i);
-        value = b.array();
-        return zk.create(root + "/n_", value, Ids.OPEN_ACL_UNSAFE,
-        CreateMode.EPHEMERAL_SEQUENTIAL);
-      }
-    \end{lstlisting}
+    \lstinputlisting{arquivos/produce.java}
   \end{exampleblock}
 \end{frame}
 
@@ -197,14 +168,7 @@
 \begin{frame}[fragile=singleslide]
   \frametitle{Quantos clientes estão querendo ser líder}
   \begin{exampleblock}{Election.java}
-    \begin{lstlisting}
-      int tamanho() throws KeeperException, InterruptedException{
-        Stat stat = new Stat();
-        zk.getData("/ELECTION", false, stat);
-        
-        return stat.getNumChildren();
-      }
-    \end{lstlisting}
+    \lstinputlisting{arquivos/tamanho.java}
   \end{exampleblock}
 \end{frame}
 
@@ -212,30 +176,7 @@
 \begin{frame}[fragile=singleslide]
   \frametitle{Qual é o menor ID?}
   \begin{exampleblock}{Election.java}
-    \begin{lstlisting}[basicstyle=\tiny]
-      String menor() throws KeeperException, InterruptedException{
-        int retvalue = -1;
-        Stat stat = null;
-        String aux = new String();
-        
-        while (true) {
-          List<String> list = zk.getChildren(root, true);
-          if(list.size() != 0){
-            Integer min = new Integer(list.get(0).substring(7));
-            aux = list.get(0).substring(2);
-            for(String s : list){
-              Integer tempValue = new Integer(s.substring(7));
-              if(tempValue < min){
-                min = tempValue;
-                aux = s.substring(2);
-              }
-            }
-            return aux;
-          }
-          return INFINITO;
-        }
-      }
-    \end{lstlisting}
+    \lstinputlisting[basicstyle=\tiny]{arquivos/menor.java}
   \end{exampleblock}
 \end{frame}
 
@@ -243,11 +184,7 @@
 \begin{frame}[fragile=singleslide]
   \frametitle{Monitoração do znode}
   \begin{exampleblock}{Election.java}
-    \begin{lstlisting}
-      void monitora(String s){
-        this.dm = new DataMonitor(zk, "/ELECTION/n_" + s, null, this);
-      }
-    \end{lstlisting}
+    \lstinputlisting{arquivos/monitora.java}
   \end{exampleblock}
 \end{frame}
 
@@ -255,31 +192,7 @@
 \begin{frame}[fragile=singleslide]
   \frametitle{Criação de znode e espera pela queda do líder}
   \begin{exampleblock}{Election.java}
-    \begin{lstlisting}[basicstyle=\tiny]
-      public static void election(String args[]){
-	Queue q = new Queue(args[0], "/ELECTION");
-	try{
-          int selfId = Integer.parseInt(q.produce(0).substring(13)); //Criacao do znode
-          System.out.println("Meu ID: " + selfId);
-
-          List<String> list = q.zk.getChildren("/ELECTION", true);
-          int aux = -1;
-          while (q.tamanho() != 0) {
-            Integer menor = new Integer(q.menor());
-            if(selfId < menor){
-              System.out.println("Eu morri!!");
-              return;
-            }
-            if(menor != aux){
-              System.out.println("Menor filho:" + menor);
-              aux = menor;
-              q.SetLider( "/ELECTION/n_" + q.menor());
-              if(selfId == menor){ //Verifica se o menor id eh o meu.
-                System.out.println("Eu sou o lider\n");
-              }else{
-                naoLider(q);
-              }
-    \end{lstlisting}
+    \lstinputlisting[basicstyle=\tiny]{arquivos/election.java}
   \end{exampleblock}
 \end{frame}
 
@@ -287,21 +200,7 @@
 \begin{frame}[fragile=singleslide]
   \frametitle{Função não líder}
   \begin{exampleblock}{Election.java}
-    \begin{lstlisting}
-
-      static public void naoLider(Queue q){
-	try{
-          System.out.println("O lider nao sou eu");
-          System.out.println("Entao eu vou monitorar o lider...\n");
-          q.monitora(q.menor());
-          q.run();
-          System.out.println("Fique esperando algo acontecer...\n");
-	} catch (KeeperException e){
-	} catch (InterruptedException e){
-	}
-	return;
-      }
-    \end{lstlisting}
+    \lstinputlisting{arquivos/naolider.java}
   \end{exampleblock}
 \end{frame}
 

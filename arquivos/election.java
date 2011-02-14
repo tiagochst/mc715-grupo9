@@ -21,9 +21,4 @@ public static void election(String args[]){
 		}else{
 		    naoLider(q);
 		}
-	    }
-	}
-    } catch (KeeperException e){
-    } catch (InterruptedException e){
-    }
-}
+	    

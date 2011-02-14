@@ -5,6 +5,5 @@ String produce(int i) throws KeeperException, InterruptedException{
     // Add child with value i
     b.putInt(i);
     value = b.array();
-    return zk.create(root + "/n_", value, Ids.OPEN_ACL_UNSAFE,
-		     CreateMode.EPHEMERAL_SEQUENTIAL);
+    return zk.create(root + "/n_", value, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
 }
