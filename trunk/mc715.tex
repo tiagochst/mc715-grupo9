@@ -55,12 +55,12 @@
   numberstyle=\tiny,         
   %stepnumber=2,              
   numbersep=5pt,             
-  tabsize=2,                  
+  tabsize=8,                  
   extendedchars=true,  
   breaklines=true,       
   keywordstyle=\color{blue},
   frame=b,         
-  stringstyle=\color{green}\ttfamily, 
+  stringstyle=\color{red}\ttfamily, 
   showspaces=false,          
   showtabs=false,             
   xleftmargin=17pt,
@@ -75,7 +75,7 @@
 \DeclareCaptionFont{white}{\color{white}}
 \DeclareCaptionFont{green}{\color{green}}
 \DeclareCaptionFormat{listing}{\colorbox[cmyk]{0.43, 0.35, 0.35,0.01}{\parbox{\textwidth}{\hspace{15pt}#1#2#3}}}
-\captionsetup[lstlisting]{format=listing,labelfont=white,textfont=white, singlelinecheck=false, margin=0pt, font={bf,footnotesize}}
+%\captionsetup[lstlisting]{format=listing,labelfont=white,textfont=white, singlelinecheck=false, margin=0pt, font={bf,footnotesize}}
 
 
 %%% extras %%%
@@ -137,23 +137,10 @@
 \begin{frame}[fragile=singleslide]
   \frametitle{Líder caiu?}
   \begin{exampleblock}{Election.java}
-    \begin{lstlisting}[basicstyle=\tiny]
-
-      synchronized public void process(WatchedEvent event) {
-        synchronized (mutex) {
-          if(event.getType() != Event.EventType.None) {
-            boolean isNodeDeleted = event.getType().equals(EventType.NodeDeleted);          // Verifica se o evento eh de queda.
-            boolean LiderAtual = event.getPath().equals(lider); //Verifica se evento ocorreu no líder.
-            
-            if (isNodeDeleted &&  LiderAtual) {
-              System.out.println("O no lider caiu");
-              mutex.notify();
-              notifyAll(); //Acorda clientes
-            }
-          }
-	}
-      }
-    \end{lstlisting}
+%    \begin{lstlisting}[basicstyle=\tiny]
+\lstinputlisting[label=sched.c,basicstyle=\tiny]{process.java}
+ 
+%    \end{lstlisting}
   \end{exampleblock}
 \end{frame}
 
@@ -202,8 +189,6 @@
         return zk.create(root + "/n_", value, Ids.OPEN_ACL_UNSAFE,
         CreateMode.EPHEMERAL_SEQUENTIAL);
       }
-
-
     \end{lstlisting}
   \end{exampleblock}
 \end{frame}
@@ -250,7 +235,6 @@
           return INFINITO;
         }
       }
-
     \end{lstlisting}
   \end{exampleblock}
 \end{frame}
@@ -263,7 +247,6 @@
       void monitora(String s){
         this.dm = new DataMonitor(zk, "/ELECTION/n_" + s, null, this);
       }
-    }
     \end{lstlisting}
   \end{exampleblock}
 \end{frame}
